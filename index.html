@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Antigravity IDE — AI-powered code editor frontend" />
+  <title>Antigravity IDE</title>
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+
+<div id="workbench">
+
+  <!-- ═══ TITLE BAR ═══ -->
+  <div id="titlebar">
+    <!-- macOS-style window controls -->
+    <div class="window-controls">
+      <div class="wc-btn wc-close" title="Close"></div>
+      <div class="wc-btn wc-min" title="Minimize"></div>
+      <div class="wc-btn wc-max" title="Maximize"></div>
+    </div>
+
+    <!-- Menu bar -->
+    <div class="title-menu">
+      <div class="menu-item" onclick="showMenu('File', this)">File</div>
+      <div class="menu-item" onclick="showMenu('Edit', this)">Edit</div>
+      <div class="menu-item" onclick="showMenu('View', this)">View</div>
+      <div class="menu-item" onclick="showMenu('Terminal', this)">Terminal</div>
+      <div class="menu-item" onclick="showMenu('Help', this)">Help</div>
+    </div>
+
+    <!-- Center: Command Center -->
+    <div class="title-center">
+      <div class="command-center" onclick="showCommandPalette()" title="Search (Ctrl+Shift+P)">
+        <span class="codicon codicon-search"></span>
+        <span>Antigravity IDE</span>
+        <span class="codicon codicon-chevron-down" style="opacity:0.4;font-size:11px"></span>
+      </div>
+    </div>
+
+    <!-- Right actions -->
+    <div class="title-actions">
+      <button class="title-action-btn" onclick="toggleJetski()" title="Antigravity AI">
+        <span class="codicon codicon-robot"></span>
+      </button>
+      <button class="title-action-btn" onclick="toggleSidebar()" title="Toggle Sidebar (Ctrl+B)">
+        <span class="codicon codicon-layout-sidebar-left-off"></span>
+      </button>
+      <button class="title-action-btn" onclick="togglePanel()" title="Toggle Panel (Ctrl+J)">
+        <span class="codicon codicon-layout-panel-off"></span>
+      </button>
+    </div>
+  </div>
+  <!-- /TITLE BAR -->
+
+  <!-- ═══ MAIN CONTAINER ═══ -->
+  <div id="main-container">
+
+    <!-- ─── ACTIVITY BAR ─── -->
+    <div id="activitybar">
+      <button class="activity-item active" data-view="explorer" onclick="switchActivity('explorer')" title="Explorer (Ctrl+Shift+E)">
+        <span class="codicon codicon-files"></span>
+      </button>
+      <button class="activity-item" data-view="search" onclick="switchActivity('search')" title="Search (Ctrl+Shift+F)">
+        <span class="codicon codicon-search"></span>
+      </button>
+      <button class="activity-item" data-view="scm" onclick="switchActivity('scm')" title="Source Control (Ctrl+Shift+G)">
+        <span class="codicon codicon-source-control"></span>
+        <span class="badge">3</span>
+      </button>
+      <button class="activity-item" data-view="debug" onclick="switchActivity('debug')" title="Run and Debug (Ctrl+Shift+D)">
+        <span class="codicon codicon-debug-alt"></span>
+      </button>
+      <button class="activity-item" data-view="extensions" onclick="switchActivity('extensions')" title="Extensions (Ctrl+Shift+X)">
+        <span class="codicon codicon-extensions"></span>
+      </button>
+
+      <div class="spacer"></div>
+
+      <button class="activity-item" onclick="addNotification('info','Account','Signed in as user@gmail.com')" title="Account">
+        <span class="codicon codicon-account"></span>
+      </button>
+      <button class="activity-item" onclick="showMenu('View', this)" title="Manage">
+        <span class="codicon codicon-settings-gear"></span>
+      </button>
+    </div>
+    <!-- /ACTIVITY BAR -->
+
+    <!-- ─── SIDEBAR ─── -->
+    <div id="sidebar">
+      <div id="sidebar-content"></div>
+    </div>
+    <!-- /SIDEBAR -->
+
+    <!-- ─── CENTER (Editor + Panel) ─── -->
+    <div style="display:flex;flex-direction:column;flex:1;min-width:0;overflow:hidden;">
+
+      <!-- Editor Area -->
+      <div id="editor-area">
+
+        <!-- Tab Bar -->
+        <div id="tab-bar">
+          <!-- Tabs rendered by JS -->
+        </div>
+
+        <!-- Breadcrumb -->
+        <div id="breadcrumb">
+          <span class="breadcrumb-item"><span>my-project</span></span>
+          <span class="breadcrumb-sep codicon codicon-chevron-right"></span>
+          <span class="breadcrumb-item"><span>Welcome</span></span>
+        </div>
+
+        <!-- Editor Content -->
+        <div id="editor-content">
+          <!-- Welcome screen rendered by JS -->
+        </div>
+
+      </div>
+      <!-- /Editor Area -->
+
+      <!-- Panel (Terminal / Output / Problems) -->
+      <div id="panel">
+
+        <!-- Panel Tab Bar -->
+        <div id="panel-tabs">
+          <div class="panel-tab active" data-panel="terminal" onclick="switchPanelTab('terminal')">
+            <span class="codicon codicon-terminal" style="font-size:13px"></span>
+            Terminal
+          </div>
+          <div class="panel-tab" data-panel="output" onclick="switchPanelTab('output')">
+            <span class="codicon codicon-output" style="font-size:13px"></span>
+            Output
+          </div>
+          <div class="panel-tab" data-panel="problems" onclick="switchPanelTab('problems')">
+            <span class="codicon codicon-problems" style="font-size:13px"></span>
+            Problems
+            <span style="background:#f14c4c;color:#fff;font-size:10px;padding:0 5px;border-radius:10px;font-weight:700;margin-left:2px">2</span>
+          </div>
+          <div class="panel-tab" data-panel="debug-console" onclick="switchPanelTab('debug-console')">
+            <span class="codicon codicon-debug-alt" style="font-size:13px"></span>
+            Debug Console
+          </div>
+
+          <!-- Panel toolbar -->
+          <div id="panel-toolbar">
+            <button class="panel-toolbar-btn" onclick="if(!state.panelVisible)togglePanel();switchPanelTab('terminal')" title="New Terminal">
+              <span class="codicon codicon-add"></span>
+            </button>
+            <button class="panel-toolbar-btn" onclick="$('terminal-output').innerHTML='';initTerminal()" title="Clear">
+              <span class="codicon codicon-trash"></span>
+            </button>
+            <button class="panel-toolbar-btn" onclick="togglePanel()" title="Close Panel">
+              <span class="codicon codicon-close"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Panel Content -->
+        <div id="panel-content">
+
+          <!-- Terminal -->
+          <div class="panel-view active" data-panel-view="terminal">
+            <div id="terminal-output" style="flex:1;overflow-y:auto;font-family:'Cascadia Code','Fira Code','Consolas',monospace;font-size:13px;line-height:1.6"></div>
+          </div>
+
+          <!-- Output -->
+          <div class="panel-view" data-panel-view="output">
+            <div style="flex:1;overflow-y:auto;font-family:'Cascadia Code',monospace;font-size:12px;line-height:1.6;opacity:0.8">
+              <div style="color:#73c991">[INFO] Antigravity IDE started successfully</div>
+              <div style="color:#e2c08d">[WARN] TypeScript strict mode not enabled</div>
+              <div>[LOG] Workspace: my-project loaded</div>
+              <div>[LOG] 7 files indexed</div>
+              <div style="color:#73c991">[INFO] Language server ready</div>
+            </div>
+          </div>
+
+          <!-- Problems -->
+          <div class="panel-view" data-panel-view="problems">
+            <div style="flex:1;overflow-y:auto;font-size:13px">
+              <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;cursor:pointer;border-radius:4px" onmouseover="this.style.background='var(--vscode-list-hoverBackground)'" onmouseout="this.style.background=''">
+                <span class="codicon codicon-error" style="color:#f14c4c;font-size:14px"></span>
+                <span style="flex:1">Cannot find module 'react' or its type declarations</span>
+                <span style="opacity:0.5;font-size:11px">src/index.tsx</span>
+                <span style="opacity:0.4;font-size:11px">Ln 1, Col 8</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;cursor:pointer;border-radius:4px" onmouseover="this.style.background='var(--vscode-list-hoverBackground)'" onmouseout="this.style.background=''">
+                <span class="codicon codicon-warning" style="color:#cca700;font-size:14px"></span>
+                <span style="flex:1">'count' is declared but its value is never read</span>
+                <span style="opacity:0.5;font-size:11px">src/App.tsx</span>
+                <span style="opacity:0.4;font-size:11px">Ln 6, Col 9</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Debug Console -->
+          <div class="panel-view" data-panel-view="debug-console">
+            <div style="flex:1;overflow-y:auto;font-family:'Cascadia Code',monospace;font-size:13px;line-height:1.6;opacity:0.6">
+              No debugger connected. To start debugging, open a file and press F5.
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <!-- /Panel -->
+
+    </div>
+    <!-- /CENTER -->
+
+    <!-- ─── JETSKI AI PANEL ─── -->
+    <div id="jetski-panel">
+      <!-- Jetski Header -->
+      <div id="jetski-header">
+        <img src="jetski-logo-white.svg" onerror="this.style.display='none'" alt="Antigravity" />
+        <span class="jetski-title">Antigravity</span>
+        <button class="panel-toolbar-btn" onclick="addNotification('info','Model','Using Gemini 2.0 Flash')" title="Model: Gemini 2.0">
+          <span style="font-size:11px;opacity:0.7">Gemini 2.0</span>
+        </button>
+        <button class="panel-toolbar-btn" onclick="state.jetskiMessages=[];renderJetskiMessages()" title="Clear chat">
+          <span class="codicon codicon-trash"></span>
+        </button>
+        <button class="panel-toolbar-btn" onclick="toggleJetski()" title="Close">
+          <span class="codicon codicon-close"></span>
+        </button>
+      </div>
+
+      <!-- Messages -->
+      <div id="jetski-messages"></div>
+
+      <!-- Input Area -->
+      <div id="jetski-input-area">
+        <!-- Toolbar above input -->
+        <div style="display:flex;gap:4px;margin-bottom:6px">
+          <button class="panel-toolbar-btn" style="font-size:11px;width:auto;padding:0 8px;opacity:0.7" title="Add context">
+            <span class="codicon codicon-add"></span> Add Context
+          </button>
+          <button class="panel-toolbar-btn" style="font-size:11px;width:auto;padding:0 8px;opacity:0.7" title="Attach file">
+            <span class="codicon codicon-file-code"></span> Attach
+          </button>
+        </div>
+        <div id="jetski-input-container">
+          <textarea id="jetski-input" placeholder="Ask Antigravity..." rows="1"></textarea>
+          <button id="jetski-send-btn" onclick="sendJetskiMessage()" title="Send (Enter)">
+            <span class="codicon codicon-play"></span>
+          </button>
+        </div>
+        <div style="margin-top:6px;font-size:11px;opacity:0.4;text-align:center">
+          Powered by Google Gemini
+        </div>
+      </div>
+    </div>
+    <!-- /JETSKI AI PANEL -->
+
+  </div>
+  <!-- /MAIN CONTAINER -->
+
+  <!-- ═══ STATUS BAR ═══ -->
+  <div id="statusbar">
+    <div class="statusbar-left">
+      <div class="statusbar-item" onclick="switchActivity('scm')" title="Source Control">
+        <span class="codicon codicon-git-branch"></span>
+        <span>main</span>
+      </div>
+      <div class="statusbar-item" onclick="addNotification('info','Sync','Syncing with remote...')" title="Sync changes">
+        <span class="codicon codicon-sync"></span>
+        <span>0↓ 2↑</span>
+      </div>
+      <div class="statusbar-item error" onclick="switchPanelTab('problems');if(!state.panelVisible)togglePanel()" title="Errors">
+        <span class="codicon codicon-error"></span>
+        <span>1</span>
+      </div>
+      <div class="statusbar-item" onclick="switchPanelTab('problems');if(!state.panelVisible)togglePanel()" title="Warnings">
+        <span class="codicon codicon-warning"></span>
+        <span>1</span>
+      </div>
+    </div>
+
+    <div class="statusbar-right">
+      <div class="statusbar-item" onclick="addNotification('info','Language','TypeScript React')" title="Language Mode">
+        <span>TypeScript React</span>
+      </div>
+      <div class="statusbar-item" onclick="addNotification('info','Encoding','UTF-8')" title="Encoding">
+        <span>UTF-8</span>
+      </div>
+      <div class="statusbar-item" onclick="addNotification('info','EOL','LF')" title="End of Line">
+        <span>LF</span>
+      </div>
+      <div class="statusbar-item" onclick="addNotification('info','Indentation','2 spaces')" title="Indent">
+        <span>Spaces: 2</span>
+      </div>
+      <div class="statusbar-item" id="statusbar-theme" onclick="toggleTheme()" title="Color Theme">
+        <span>Dark+</span>
+      </div>
+      <div class="statusbar-item" onclick="toggleJetski()" title="Antigravity AI">
+        <span class="codicon codicon-robot"></span>
+        <span>Antigravity</span>
+      </div>
+      <div class="statusbar-item" onclick="addNotification('info','Notifications','No new notifications')" title="Notifications">
+        <span class="codicon codicon-bell"></span>
+      </div>
+    </div>
+  </div>
+  <!-- /STATUS BAR -->
+
+</div>
+<!-- /WORKBENCH -->
+
+<!-- ═══ OVERLAYS ═══ -->
+
+<!-- Command Palette -->
+<div id="command-palette-overlay">
+  <div id="command-palette">
+    <div id="command-palette-input-wrap">
+      <span class="codicon codicon-search" style="opacity:0.6;font-size:14px"></span>
+      <input type="text" id="command-palette-input" placeholder="Type a command or search..." autocomplete="off" />
+    </div>
+    <div id="command-palette-list"></div>
+  </div>
+</div>
+
+<!-- Context Menu -->
+<div id="context-menu"></div>
+
+<!-- Notifications -->
+<div id="notifications"></div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
